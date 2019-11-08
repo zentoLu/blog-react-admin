@@ -120,7 +120,6 @@ export async function addReplyMessage(params) {
   });
 }
 
-
 // 文章
 export async function queryArticle(params) {
   return request(`/api/getArticleListAdmin?${stringify(params)}`);
@@ -153,6 +152,21 @@ export async function getArticleDetail(params) {
   });
 }
 
+// 管理一级评论
+export async function changeComment(params) {
+  return request('/api/changeComment', {
+    method: 'POST',
+    body: params,
+  });
+}
+
+// 管理第三者评论
+export async function changeThirdComment(params) {
+  return request('/api/changeThirdComment', {
+    method: 'POST',
+    body: params,
+  });
+}
 
 // 时间轴
 export async function queryTimeAxis(params) {
@@ -186,6 +200,37 @@ export async function getTimeAxisDetail(params) {
   });
 }
 
+// 项目
+export async function queryProject(params) {
+  return request(`/api/getProjectList?${stringify(params)}`);
+}
+
+export async function addProject(params) {
+  return request('/api/addProject', {
+    method: 'POST',
+    body: params,
+  });
+}
+export async function delProject(params) {
+  return request('/api/delProject', {
+    method: 'POST',
+    body: params,
+  });
+}
+
+export async function updateProject(params) {
+  return request('/api/updateProject', {
+    method: 'POST',
+    body: params,
+  });
+}
+
+export async function getProjectDetail(params) {
+  return request('/api/getProjectDetail', {
+    method: 'POST',
+    body: params,
+  });
+}
 
 // 标签
 export async function queryTag(params) {
@@ -205,7 +250,6 @@ export async function delTag(params) {
     body: params,
   });
 }
-
 
 export async function queryBasicProfile() {
   return request('/api/profile/basic');

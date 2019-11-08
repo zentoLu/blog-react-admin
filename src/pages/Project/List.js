@@ -14,16 +14,17 @@ import {
   Divider,
   Tag,
   Select,
+  Avatar
 } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 
-import TimeAxisComponent from './TimeAxisComponent';
+import ProjectComponent from './ProjectComponent';
 
 const FormItem = Form.Item;
 
 /* eslint react/no-multi-comp:0 */
-@connect(({ timeAxis }) => ({
-  timeAxis,
+@connect(({ project }) => ({
+  project,
 }))
 @Form.create()
 class TableList extends PureComponent {
@@ -32,6 +33,8 @@ class TableList extends PureComponent {
     this.state = {
       changeType: false,
       title: '',
+      img: '',
+      url: '',
       stateComponent: '',
       content: '',
       start_time: new Date(),
@@ -39,7 +42,7 @@ class TableList extends PureComponent {
       visible: false,
       loading: false,
       keyword: '',
-      state: '', // 状态 1 是已经完成 ，2 是正在进行，3 是没完成 ,'' 代表所有时间轴
+      state: '', // 状态 1 是已经完成 ，2 是正在进行，3 是没完成 ,'' 代表所有项目
       pageNum: 1,
       pageSize: 10,
       columns: [
@@ -52,6 +55,17 @@ class TableList extends PureComponent {
           title: '内容',
           width: 350,
           dataIndex: 'content',
+        },
+        {
+          title: 'url',
+          width: 100,
+          dataIndex: 'url',
+        },
+        {
+          title: '封面图',
+          width: 50,
+          dataIndex: 'img',
+          render: val => <Avatar shape="square" src={val} size={40} icon="user" />,
         },
         {
           title: '状态',
@@ -97,7 +111,6 @@ class TableList extends PureComponent {
       ],
     };
 
-    this.handleChangeKeyword = this.handleChangeKeyword.bind(this);
     this.handleOk = this.handleOk.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.showModal = this.showModal.bind(this);
@@ -105,7 +118,6 @@ class TableList extends PureComponent {
     this.handleSearch = this.handleSearch.bind(this);
     this.handleChangeState = this.handleChangeState.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.handleChangeContent = this.handleChangeContent.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleStateChange = this.handleStateChange.bind(this);
     this.onChangeTime = this.onChangeTime.bind(this);
@@ -125,19 +137,21 @@ class TableList extends PureComponent {
 
   handleSubmit() {
     const { dispatch } = this.props;
-    const { timeAxisDetail } = this.props.timeAxis;
+    const { projectDetail } = this.props.project;
     if (this.state.changeType) {
       const params = {
-        id: timeAxisDetail._id,
+        id: projectDetail._id,
         state: this.state.stateComponent,
         title: this.state.title,
+        img: this.state.img,
+        url: this.state.url,
         content: this.state.content,
         start_time: this.state.start_time,
         end_time: this.state.end_time,
       };
       new Promise(resolve => {
         dispatch({
-          type: 'timeAxis/updateTimeAxis',
+          type: 'project/updateProject',
           payload: {
             resolve,
             params,
@@ -163,13 +177,15 @@ class TableList extends PureComponent {
       const params = {
         state: this.state.stateComponent,
         title: this.state.title,
+        img: this.state.img,
+        url: this.state.url,
         content: this.state.content,
         start_time: this.state.start_time,
         end_time: this.state.end_time,
       };
       new Promise(resolve => {
         dispatch({
-          type: 'timeAxis/addTimeAxis',
+          type: 'project/addProject',
           payload: {
             resolve,
             params,
@@ -195,14 +211,9 @@ class TableList extends PureComponent {
   }
 
   handleChange(event) {
+    console.log('event.target.value :', event.target.name)
     this.setState({
-      title: event.target.value,
-    });
-  }
-
-  handleChangeContent(event) {
-    this.setState({
-      content: event.target.value,
+      [event.target.name]: event.target.value,
     });
   }
 
@@ -221,12 +232,6 @@ class TableList extends PureComponent {
         this.handleSearch();
       }
     );
-  }
-
-  handleChangeKeyword(event) {
-    this.setState({
-      keyword: event.target.value,
-    });
   }
 
   handleChangePageParam(pageNum, pageSize) {
@@ -249,7 +254,7 @@ class TableList extends PureComponent {
       };
       new Promise(resolve => {
         dispatch({
-          type: 'timeAxis/getTimeAxisDetail',
+          type: 'project/getProjectDetail',
           payload: {
             resolve,
             params,
@@ -263,6 +268,8 @@ class TableList extends PureComponent {
             changeType: true,
             stateComponent: res.data.state,
             title: res.data.title,
+            img: res.data.img,
+            url: res.data.url,
             content: res.data.content,
           });
         } else {
@@ -277,6 +284,8 @@ class TableList extends PureComponent {
         changeType: false,
         stateComponent: '',
         title: '',
+        img: '',
+        url: '',
         content: '',
       });
     }
@@ -305,7 +314,7 @@ class TableList extends PureComponent {
     };
     new Promise(resolve => {
       dispatch({
-        type: 'timeAxis/queryTimeAxis',
+        type: 'project/queryProject',
         payload: {
           resolve,
           params,
@@ -334,7 +343,7 @@ class TableList extends PureComponent {
     };
     new Promise(resolve => {
       dispatch({
-        type: 'timeAxis/delTimeAxis',
+        type: 'project/delProject',
         payload: {
           resolve,
           params,
@@ -362,9 +371,10 @@ class TableList extends PureComponent {
           <Col md={24} sm={24}>
             <FormItem>
               <Input
-                placeholder="留言内容"
+                name="keyword"
+                placeholder="项目 标题/内容"
                 value={this.state.keyword}
-                onChange={this.handleChangeKeyword}
+                onChange={this.handleChange}
               />
             </FormItem>
 
@@ -373,7 +383,7 @@ class TableList extends PureComponent {
               placeholder="选择状态"
               onChange={this.handleChangeState}
             >
-              {/* 状态 1 是已经完成 ，2 是正在进行，3 是没完成 ,'' 代表所有时间轴 */}
+              {/* 状态 1 是已经完成 ，2 是正在进行，3 是没完成 ,'' 代表所有项目 */}
               <Select.Option value="">所有</Select.Option>
               <Select.Option value="1">已完成</Select.Option>
               <Select.Option value="2">正在进行</Select.Option>
@@ -406,7 +416,7 @@ class TableList extends PureComponent {
   }
 
   render() {
-    const { timeAxisList, total } = this.props.timeAxis;
+    const { projectList, total } = this.props.project;
     const { pageNum, pageSize } = this.state;
     const pagination = {
       total,
@@ -423,7 +433,7 @@ class TableList extends PureComponent {
     };
 
     return (
-      <PageHeaderWrapper title="时间轴管理">
+      <PageHeaderWrapper title="项目管理">
         <Card bordered={false}>
           <div className="">
             <div className="">{this.renderSimpleForm()}</div>
@@ -434,20 +444,21 @@ class TableList extends PureComponent {
               rowKey={record => record._id}
               columns={this.state.columns}
               bordered
-              dataSource={timeAxisList}
+              dataSource={projectList}
             />
           </div>
         </Card>
-        <TimeAxisComponent
+        <ProjectComponent
           changeType={this.state.changeType}
           title={this.state.title}
+          img={this.state.img}
+          url={this.state.url}
           content={this.state.content}
           state={this.state.stateComponent}
           visible={this.state.visible}
           handleOk={this.handleOk}
           handleChange={this.handleChange}
           handleStateChange={this.handleStateChange}
-          handleChangeContent={this.handleChangeContent}
           handleCancel={this.handleCancel}
           onChangeTime={this.onChangeTime}
         />
